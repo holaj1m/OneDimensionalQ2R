@@ -10,7 +10,7 @@
 int main(){
 
     // Size of the system and total numer of iterations
-    size_t dimension{}, time{};
+    size_t dimension{6}, time{5};
 
     // Pointers to allocate states of the system
     int *currentStates{nullptr}; // pointer to the current states
@@ -24,8 +24,8 @@ int main(){
 
     // Density between states A and B, and between A and C.
     // in the distribution, or total configuration.
-    double densityStatesAB{};
-    double densityStatesAC{};
+    double densityStatesAB{0.3};
+    double densityStatesAC{0.15};
 
     // Set the initial conditions
     configureInitialConditions(dimension, densityStatesAB, densityStatesAC,currentStates, neighbors, nextStates);
@@ -59,10 +59,17 @@ int main(){
 
             // Evolve the state
             nextStates[cellIdx] = Q2RPottsRule(currentStates, neighbors, cellIdx, firstNeighborRightIdx, secondNeighborRightIdx, firstNeighborLeftIdx, secondNeighborLeftIdx);
-
-            // FALTA AGREGAR FUNCIONES PARA PERMUTAR MATRICES, CERRAR OUTPUTS, ENERGIA, ETC.
         }
 
+        // Permute currentStates with neighbors and neighbors with nextStates to evolve one step
+        reArrangePtr(dimension, currentStates, neighbors, nextStates);
+
     }
+
+    // Clean the memory used by pointers
+    delete[] currentStates; currentStates   = NULL;
+    delete[] neighbors;     neighbors       = NULL;
+    delete[] nextStates;    nextStates      = NULL;
+
     return 0;
 }

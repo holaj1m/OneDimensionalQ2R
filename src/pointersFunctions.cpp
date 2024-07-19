@@ -1,5 +1,5 @@
 #include <cstdlib>
-
+#include <iostream>
 // Create a one-dimensional pointer
 int *create1DPtr(size_t ptrSize){
 
@@ -32,4 +32,22 @@ void configureInitialConditions(size_t ptrSize, double densityStatesAB, double d
 
         evolutionPtr[i] = statesPtr[i];
     }
+}
+
+// Permutation of matrices to evolve one step
+void reArrangePtr(size_t ptrSize, int *statesPtr, int *neighborsPtr, int *evolutionPtr){
+
+    for(size_t i{}; i < ptrSize; i++){
+        statesPtr[i]    = neighborsPtr[i];
+        neighborsPtr[i] = evolutionPtr[i];
+    }
+}
+
+// Display pointer
+void displayPtr(size_t ptrSize, int *ptr){
+    std::cout << "[" << ptr[0] << ", ";
+    for(size_t i{}; i < ptrSize - 1; i++){
+        std::cout << ptr[i] << ", ";
+    }
+    std::cout << ptr[ptrSize-1] << "]" << std::endl;
 }
