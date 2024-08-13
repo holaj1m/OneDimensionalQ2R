@@ -1,5 +1,7 @@
 #include <cstdlib>
 #include <iostream>
+
+
 // Create a one-dimensional pointer
 int *create1DPtr(size_t ptrSize){
 
@@ -46,8 +48,9 @@ void reArrangePtr(size_t ptrSize, int *statesPtr, int *neighborsPtr, int *evolut
 // Display pointer
 void displayPtr(size_t ptrSize, int *ptr){
     std::cout << "[" << ptr[0] << ", ";
-    for(size_t i{}; i < ptrSize - 1; i++){
+    for(size_t i{1}; i < ptrSize - 1; i++){
         std::cout << ptr[i] << ", ";
     }
     std::cout << ptr[ptrSize-1] << "]" << std::endl;
 }
+

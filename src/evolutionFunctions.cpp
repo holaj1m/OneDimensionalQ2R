@@ -2,23 +2,26 @@
 #include <vector>
 
 // Compute neighbors index considering periodic boundary conditions
-void periodicBoudaryCondition(const size_t &idxCell, size_t size, size_t &firstNeighborRightIdx, size_t &secondNeighborRightIdx, size_t &firstNeighborLeftIdx, size_t &secondNeighborLeftIdx){
+void idxPeriodicBoudaryCondition(size_t size, int *firstNeighborRightIdx, int *secondNeighborRightIdx, int *firstNeighborLeftIdx, int *secondNeighborLeftIdx){
 
-    // Mod operation to obtain neighbors
-    firstNeighborRightIdx  =   (idxCell + 1) % size;
-    secondNeighborRightIdx =   (idxCell + 2) % size;
+    // Visit each cell on the state's array
+    for(size_t idxCell{}; idxCell < size; idxCell++){
+        // Mod operation to obtain neighbors
+        firstNeighborRightIdx[idxCell]  =   (idxCell + 1) % size;
+        secondNeighborRightIdx[idxCell] =   (idxCell + 2) % size;
 
-    firstNeighborLeftIdx   =   (idxCell + size - 1) % size;
-    secondNeighborLeftIdx  =   (idxCell + size - 2) % size;
+        firstNeighborLeftIdx[idxCell]   =   (idxCell + size - 1) % size;
+        secondNeighborLeftIdx[idxCell]  =   (idxCell + size - 2) % size;
+    }
+    
 
 }
 
 // Rule of evolution for the Q2R-Potts cellular automaton
-int Q2RPottsRule(int *ptrStates, int *ptrNeighbors, size_t idxCell, size_t firstNeighborRightIdx, size_t secondNeighborRightIdx, size_t firstNeighborLeftIdx, size_t secondNeighborLeftIdx){
+int Q2RPottsRule(size_t idxCell, int *ptrStates, const int &firstNeighborRight, const int &secondNeighborRight, const int &firstNeighborLeft, const int &secondNeighborLeft){
 
     // Get the current state and its neighbors
-    int currentState{ptrStates[idxCell]}, firstNeighborRight{ptrNeighbors[firstNeighborRightIdx]}, secondNeighborRight{ptrNeighbors[secondNeighborRightIdx]};
-    int firstNeighborLeft{ptrNeighbors[firstNeighborLeftIdx]}, secondNeighborLeft{ptrNeighbors[secondNeighborLeftIdx]};
+    int currentState{ptrStates[idxCell]};
 
     // Create vector to save neighbors
     std::vector<int> neighborhood{firstNeighborRight, secondNeighborRight, firstNeighborLeft, secondNeighborLeft};

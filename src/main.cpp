@@ -31,21 +31,37 @@ int main(){
     configureInitialConditions(dimension, densityStatesAB, densityStatesAC,currentStates, neighbors, nextStates);
 
     // Create output files to store the counts of each state
-    FILE *countStateA = createBinOutput("countStateA.bin");
+    /*FILE *countStateA = createBinOutput("countStateA.bin");
     FILE *countStateB = createBinOutput("countStateB.bin");
     FILE *countStateC = createBinOutput("countStateC.bin");
 
     // Verify if the files were opened properly
     verifyBinaryOutput(countStateA);
     verifyBinaryOutput(countStateB);
-    verifyBinaryOutput(countStateC);
+    verifyBinaryOutput(countStateC);*/
 
     //=============================================================================================================
     //===================================== E V O L V E  T H E  S Y S T E M ======================================= 
+    
+    // Pointers to allocate index of neighbors for each state
+    int *firstNeighborRightIdx{nullptr}, *secondNeighborRightIdx{nullptr};
+    int *firstNeighborLeftIdx{nullptr}, *secondNeighborLeftIdx{nullptr};
 
-    // Define variable to save the position of the neighbors of a certain cell during evolution
-    size_t firstNeighborRightIdx{}, secondNeighborRightIdx{};
-    size_t firstNeighborLeftIdx{}, secondNeighborLeftIdx{};
+    // Allocate memory on index pointers
+    firstNeighborRightIdx   =   create1DPtr(dimension);
+    secondNeighborRightIdx  =   create1DPtr(dimension);
+
+    firstNeighborLeftIdx    =   create1DPtr(dimension);
+    secondNeighborLeftIdx   =   create1DPtr(dimension);
+
+    // Compute the idx of the neighbor for each position in the array
+    idxPeriodicBoudaryCondition(dimension, firstNeighborRightIdx, secondNeighborRightIdx, firstNeighborLeftIdx, secondNeighborLeftIdx);
+    displayPtr(dimension,firstNeighborRightIdx);
+    displayPtr(dimension,firstNeighborLeftIdx);
+    // Define variables to save the current neighbors of a cell
+    int firstNeighborRight{}, secondNeighborRight{};
+    int firstNeighborLeft{}, secondNeighborLeft{};
+
     for(size_t t{}; t < time; t++){
 
         // Define variables to store the frequency of each state over simulation
@@ -54,11 +70,15 @@ int main(){
         // Access to each cell of the array to evolve it
         for(size_t cellIdx{}; cellIdx < dimension; cellIdx++){
 
-            // Apply periodic boundary condition to the system
-            periodicBoudaryCondition(cellIdx, dimension, firstNeighborRightIdx, secondNeighborRightIdx, firstNeighborLeftIdx, secondNeighborLeftIdx);
+            // Neighbors of current cell
+            firstNeighborRight  =   neighbors[firstNeighborRightIdx[cellIdx]];
+            secondNeighborRight =   neighbors[secondNeighborRightIdx[cellIdx]];
+
+            firstNeighborLeft   =   neighbors[firstNeighborLeftIdx[cellIdx]];
+            secondNeighborLeft  =   neighbors[secondNeighborLeftIdx[cellIdx]];
 
             // Evolve the state
-            nextStates[cellIdx] = Q2RPottsRule(currentStates, neighbors, cellIdx, firstNeighborRightIdx, secondNeighborRightIdx, firstNeighborLeftIdx, secondNeighborLeftIdx);
+            nextStates[cellIdx] = Q2RPottsRule(cellIdx, currentStates, firstNeighborRight, secondNeighborRight, firstNeighborLeft, secondNeighborLeft);
         }
 
         // Permute currentStates with neighbors and neighbors with nextStates to evolve one step

@@ -4,9 +4,9 @@
 #include <cstdlib>
 
 // Compute neighbors considering periodic boundary conditions
-void periodicBoudaryCondition(const size_t &idxCell, size_t size, size_t &firstNeighborRightIdx, size_t &secondNeighborRightIdx, size_t &firstNeighborLeftIdx, size_t &secondNeighborLeftIdx);
+void idxPeriodicBoudaryCondition(size_t size, int *firstNeighborRightIdx, int *secondNeighborRightIdx, int *firstNeighborLeftIdx, int *secondNeighborLeftIdx);
 
 // Rule of evolution for the Q2R-Potts cellular automaton
-int Q2RPottsRule(int *ptrStates, int *ptrNeighbors, size_t idxCell, size_t firstNeighborRightIdx, size_t secondNeighborRightIdx, size_t firstNeighborLeftIdx, size_t secondNeighborLeftIdx);
+int Q2RPottsRule(size_t idxCell, int *ptrStates, const int &firstNeighborRight, const int &secondNeighborRight, const int &firstNeighborLeft, const int &secondNeighborLeft);
 
 #endif
