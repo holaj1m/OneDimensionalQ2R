@@ -106,6 +106,33 @@ int Q2RPottsRule(size_t idxCell, int *ptrStates, const int &firstNeighborRight, 
     return evolutionState;
 }
 
+//Computation of energy on the system
+void computeEnergy(size_t size, int &energy, int *ptrStates, int *ptrNeighbors, int *ptrFirstNeighborRightIdx, int *ptrSecondNeighborRightIdx, int *ptrFirstNeighborLeftIdx, int *ptrSecondNeighborLeftIdx){
+    
+    int currentState{};
+    int firstNeighborRight{}, secondNeighborRight{}, firstNeighborLeft{}, secondNeighborLeft{};
 
+    for(size_t idxCell{}; idxCell < size; idxCell++){
+        
+        // State in the current cell or index
+        int currentState{ptrStates[idxCell]};
+
+        // Neighbors of current cell
+        firstNeighborRight  =   ptrNeighbors[ptrFirstNeighborRightIdx[idxCell]];
+        secondNeighborRight =   ptrNeighbors[ptrSecondNeighborRightIdx[idxCell]];
+
+        firstNeighborLeft   =   ptrNeighbors[ptrFirstNeighborLeftIdx[idxCell]];
+        secondNeighborLeft  =   ptrNeighbors[ptrSecondNeighborLeftIdx[idxCell]];
+
+        if(currentState == firstNeighborRight){energy++;}
+
+        if(currentState == secondNeighborRight){energy++;}
+
+        if(currentState == firstNeighborLeft){energy++;}
+
+        if(currentState == secondNeighborLeft){energy++;}
+    }
+
+}
 
 

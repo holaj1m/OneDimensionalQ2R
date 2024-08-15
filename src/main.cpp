@@ -24,8 +24,8 @@ int main(){
 
     // Density between states A and B, and between A and C.
     // in the distribution, or total configuration.
-    double densityStatesAB{0.3};
-    double densityStatesAC{0.15};
+    double densityStatesAB{0.5};
+    double densityStatesAC{0.8};
 
     // Set the initial conditions
     configureInitialConditions(dimension, densityStatesAB, densityStatesAC,currentStates, neighbors, nextStates);
@@ -44,47 +44,61 @@ int main(){
     //===================================== E V O L V E  T H E  S Y S T E M ======================================= 
     
     // Pointers to allocate index of neighbors for each state
-    int *firstNeighborRightIdx{nullptr}, *secondNeighborRightIdx{nullptr};
-    int *firstNeighborLeftIdx{nullptr}, *secondNeighborLeftIdx{nullptr};
+    int *ptrFirstNeighborRightIdx{nullptr}, *ptrSecondNeighborRightIdx{nullptr};
+    int *ptrFirstNeighborLeftIdx{nullptr}, *ptrSecondNeighborLeftIdx{nullptr};
 
     // Allocate memory on index pointers
-    firstNeighborRightIdx   =   create1DPtr(dimension);
-    secondNeighborRightIdx  =   create1DPtr(dimension);
+    ptrFirstNeighborRightIdx   =   create1DPtr(dimension);
+    ptrSecondNeighborRightIdx  =   create1DPtr(dimension);
 
-    firstNeighborLeftIdx    =   create1DPtr(dimension);
-    secondNeighborLeftIdx   =   create1DPtr(dimension);
+    ptrFirstNeighborLeftIdx    =   create1DPtr(dimension);
+    ptrSecondNeighborLeftIdx   =   create1DPtr(dimension);
 
     // Compute the idx of the neighbor for each position in the array
-    idxPeriodicBoudaryCondition(dimension, firstNeighborRightIdx, secondNeighborRightIdx, firstNeighborLeftIdx, secondNeighborLeftIdx);
-    displayPtr(dimension,firstNeighborRightIdx);
-    displayPtr(dimension,firstNeighborLeftIdx);
+    idxPeriodicBoudaryCondition(dimension, ptrFirstNeighborRightIdx, ptrSecondNeighborRightIdx, ptrFirstNeighborLeftIdx, ptrSecondNeighborLeftIdx);
+
     // Define variables to save the current neighbors of a cell
     int firstNeighborRight{}, secondNeighborRight{};
     int firstNeighborLeft{}, secondNeighborLeft{};
 
+    
+
     for(size_t t{}; t < time; t++){
+        // Variable to test energy conservation
+        int energy{};
 
         // Define variables to store the frequency of each state over simulation
         int totalStatesA{}, totalStatesB{}, totalStatesC{};
+
+        displayPtr(dimension, currentStates);
+        displayPtr(dimension, neighbors);
 
         // Access to each cell of the array to evolve it
         for(size_t cellIdx{}; cellIdx < dimension; cellIdx++){
 
             // Neighbors of current cell
-            firstNeighborRight  =   neighbors[firstNeighborRightIdx[cellIdx]];
-            secondNeighborRight =   neighbors[secondNeighborRightIdx[cellIdx]];
+            firstNeighborRight  =   neighbors[ptrFirstNeighborRightIdx[cellIdx]];
+            secondNeighborRight =   neighbors[ptrSecondNeighborRightIdx[cellIdx]];
 
-            firstNeighborLeft   =   neighbors[firstNeighborLeftIdx[cellIdx]];
-            secondNeighborLeft  =   neighbors[secondNeighborLeftIdx[cellIdx]];
+            firstNeighborLeft   =   neighbors[ptrFirstNeighborLeftIdx[cellIdx]];
+            secondNeighborLeft  =   neighbors[ptrSecondNeighborLeftIdx[cellIdx]];
 
             // Evolve the state
             nextStates[cellIdx] = Q2RPottsRule(cellIdx, currentStates, firstNeighborRight, secondNeighborRight, firstNeighborLeft, secondNeighborLeft);
+
         }
+        displayPtr(dimension, nextStates);
+        std::cout << "===============================================\n";
 
         // Permute currentStates with neighbors and neighbors with nextStates to evolve one step
         reArrangePtr(dimension, currentStates, neighbors, nextStates);
 
     }
+
+    // Compute the energy
+    int energy{};
+    computeEnergy(dimension, energy, currentStates, neighbors, ptrFirstNeighborRightIdx, ptrSecondNeighborRightIdx, ptrFirstNeighborLeftIdx, ptrSecondNeighborLeftIdx);
+    std::cout << energy << std::endl;
 
     // Clean the memory used by pointers
     delete[] currentStates; currentStates   = NULL;
