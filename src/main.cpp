@@ -10,7 +10,7 @@
 int main(){
 
     // Size of the system and total numer of iterations
-    size_t dimension{6}, time{5};
+    size_t dimension{6}, time{1};
 
     // Pointers to allocate states of the system
     int *currentStates{nullptr}; // pointer to the current states
@@ -61,6 +61,36 @@ int main(){
     int firstNeighborRight{}, secondNeighborRight{};
     int firstNeighborLeft{}, secondNeighborLeft{};
 
+    // Pointer to allocate index of visited states during the computation of clusters
+    bool *adjListStates{nullptr};
+
+    // Allocate memory on index pointers
+    adjListStates = new bool[dimension];
+
+    // I'm going to set true as "idx that yo have to visit"
+    for(size_t cellIdx{}; cellIdx < dimension; cellIdx++){
+        adjListStates[cellIdx] = true;
+
+        currentStates[cellIdx] = 0;
+        neighbors[cellIdx] = 0;
+    }
+    // Thus, if a certain index is true we have to compute its clusters
+
+    // Pointers to allocate clusters of each state
+    int *clusterStateA{nullptr}, *clusterStateB{nullptr}, *clusterStateC{nullptr};
+
+    clusterStateA = create1DPtr(dimension);
+    clusterStateB = create1DPtr(dimension);
+    clusterStateC = create1DPtr(dimension);
+
+    for(size_t cellIdx{}; cellIdx < dimension; cellIdx++){
+        clusterStateA[cellIdx] = 0;
+        clusterStateB[cellIdx] = 0;
+        clusterStateC[cellIdx] = 0;
+    }
+
+    int clusterRight{}, clusterLeft{};
+
     
 
     for(size_t t{}; t < time; t++){
@@ -76,6 +106,11 @@ int main(){
         // Access to each cell of the array to evolve it
         for(size_t cellIdx{}; cellIdx < dimension; cellIdx++){
 
+            if(adjListStates[cellIdx]){
+                clustering(dimension, cellIdx, currentStates, ptrFirstNeighborRightIdx, ptrFirstNeighborLeftIdx, adjListStates, clusterRight, clusterLeft);
+                addTotalCluster(dimension, cellIdx, currentStates, clusterStateA, clusterStateB, clusterStateC, clusterRight, clusterLeft);
+            }
+
             // Neighbors of current cell
             firstNeighborRight  =   neighbors[ptrFirstNeighborRightIdx[cellIdx]];
             secondNeighborRight =   neighbors[ptrSecondNeighborRightIdx[cellIdx]];
@@ -89,6 +124,9 @@ int main(){
         }
         displayPtr(dimension, nextStates);
         std::cout << "===============================================\n";
+        displayPtr(dimension, clusterStateA);
+        displayPtr(dimension, clusterStateB);
+        displayPtr(dimension, clusterStateC);
 
         // Permute currentStates with neighbors and neighbors with nextStates to evolve one step
         reArrangePtr(dimension, currentStates, neighbors, nextStates);
@@ -104,6 +142,17 @@ int main(){
     delete[] currentStates; currentStates   = NULL;
     delete[] neighbors;     neighbors       = NULL;
     delete[] nextStates;    nextStates      = NULL;
+
+    delete[] ptrFirstNeighborRightIdx;  ptrFirstNeighborRightIdx    = NULL;
+    delete[] ptrFirstNeighborLeftIdx;   ptrFirstNeighborLeftIdx     = NULL;
+    delete[] ptrSecondNeighborRightIdx; ptrSecondNeighborRightIdx   = NULL;
+    delete[] ptrSecondNeighborLeftIdx;  ptrSecondNeighborLeftIdx    = NULL;
+
+    delete[] adjListStates; adjListStates = NULL;
+
+    delete[] clusterStateA; clusterStateA = NULL;
+    delete[] clusterStateB; clusterStateB = NULL;
+    delete[] clusterStateC; clusterStateC = NULL;
 
     return 0;
 }
