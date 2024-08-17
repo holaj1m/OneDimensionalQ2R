@@ -2,7 +2,7 @@
 #include <iostream>
 
 
-// Create a one-dimensional pointer
+// Create an int one-dimensional pointer
 int *create1DPtr(size_t ptrSize){
 
     int *allocateMemory{nullptr};
@@ -10,6 +10,19 @@ int *create1DPtr(size_t ptrSize){
     allocateMemory = new int[ptrSize];
 
     return allocateMemory;
+}
+
+// Configure initial states for adjacency list and clusters
+void initialStateAdjListCluster(const size_t &size, bool *ptrAdjList, int *ptrClusterA, int *ptrClusterB, int *ptrClusterC){
+    
+    for(size_t cellIdx{}; cellIdx < size; cellIdx++){
+
+        ptrAdjList[cellIdx] = true;
+
+        ptrClusterA[cellIdx] = 0;
+        ptrClusterB[cellIdx] = 0;
+        ptrClusterC[cellIdx] = 0;
+    }
 }
 
 // Configure initial conditions over pointers

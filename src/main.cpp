@@ -64,35 +64,28 @@ int main(){
     // Pointer to allocate index of visited states during the computation of clusters
     bool *adjListStates{nullptr};
 
-    // Allocate memory on index pointers
+    // Allocate memory for adjacency list pointers
     adjListStates = new bool[dimension];
-
-    // I'm going to set true as "idx that yo have to visit"
-    for(size_t cellIdx{}; cellIdx < dimension; cellIdx++){
-        adjListStates[cellIdx] = true;
-
-        currentStates[cellIdx] = 0;
-        neighbors[cellIdx] = 0;
-    }
-    // Thus, if a certain index is true we have to compute its clusters
 
     // Pointers to allocate clusters of each state
     int *clusterStateA{nullptr}, *clusterStateB{nullptr}, *clusterStateC{nullptr};
 
+    // Allocate memory for clusters ptrs
     clusterStateA = create1DPtr(dimension);
     clusterStateB = create1DPtr(dimension);
     clusterStateC = create1DPtr(dimension);
 
-    for(size_t cellIdx{}; cellIdx < dimension; cellIdx++){
-        clusterStateA[cellIdx] = 0;
-        clusterStateB[cellIdx] = 0;
-        clusterStateC[cellIdx] = 0;
-    }
+    // Set all clusters to cero and adj List to true
+    // I'm going to set true as "idx that yo have to visit"
+    initialStateAdjListCluster(dimension, adjListStates, clusterStateA, clusterStateB, clusterStateC);
+    // Thus, if a certain index is true we have to compute its clusters
 
+    // Variables to store clusters on a specific direction as a buffer
     int clusterRight{}, clusterLeft{};
 
     
-
+    // EVOLUTION OF THE SYSTEM
+    
     for(size_t t{}; t < time; t++){
         // Variable to test energy conservation
         int energy{};

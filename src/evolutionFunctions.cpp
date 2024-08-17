@@ -162,7 +162,7 @@ void clustering(const size_t &size, const size_t &idxCell, int *ptrStates, int *
         // If the cluster is on the left side, we have to count backwards in the array
         if(currentState == currentStateLeft){
 
-            for(size_t idxCluster{ptrFirstNeighborLeftIdx[idxCell]}; (idxCluster != idxCell && idxCluster >= 0); idxCluster--){
+            for(size_t idxCluster{static_cast<size_t>(ptrFirstNeighborLeftIdx[idxCell])}; (idxCluster != idxCell && idxCluster >= 0); idxCluster--){
 
                 if(currentState == ptrStates[idxCluster]){
                     addAdjacencyList(idxCell, idxCluster, clusterLeft, ptrStates, adjListStates);
@@ -175,7 +175,7 @@ void clustering(const size_t &size, const size_t &idxCell, int *ptrStates, int *
         // If cluster is on the right side we count from the position to the end of the array
         if(currentState == currentStateRight){
 
-            for(size_t idxCluster{ptrFirstNeighborRightIdx[idxCell]}; idxCluster < size; idxCluster++){
+            for(size_t idxCluster{static_cast<size_t>(ptrFirstNeighborRightIdx[idxCell])}; idxCluster < size; idxCluster++){
 
                 if(currentState == ptrStates[idxCluster]){
                     addAdjacencyList(idxCell, idxCluster, clusterRight, ptrStates, adjListStates);
@@ -191,7 +191,7 @@ void clustering(const size_t &size, const size_t &idxCell, int *ptrStates, int *
         // If the cluster is on the left side, we have to count backwards in the array
         if(currentState == currentStateLeft){
 
-            for(size_t idxCluster{ptrFirstNeighborLeftIdx[idxCell]}; (idxCluster != idxCell && idxCluster >= 0); idxCluster--){
+            for(size_t idxCluster{static_cast<size_t>(ptrFirstNeighborLeftIdx[idxCell])}; (idxCluster != idxCell && idxCluster >= 0); idxCluster--){
 
                 if(currentState == ptrStates[idxCluster]){
                     addAdjacencyList(idxCell, idxCluster, clusterLeft,ptrStates, adjListStates);
@@ -204,7 +204,7 @@ void clustering(const size_t &size, const size_t &idxCell, int *ptrStates, int *
         // If cluster is on the right side we count from the position to the end of the array
         if(currentState == currentStateRight){
 
-            for(size_t idxCluster{ptrFirstNeighborRightIdx[idxCell]}; idxCluster < size; idxCluster++){
+            for(size_t idxCluster{static_cast<size_t>(ptrFirstNeighborRightIdx[idxCell])}; idxCluster < size; idxCluster++){
 
                 if(currentState == ptrStates[idxCluster]){
                     addAdjacencyList(idxCell, idxCluster, clusterRight, ptrStates, adjListStates);
