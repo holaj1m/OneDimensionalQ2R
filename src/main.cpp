@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstdlib>
+#include <cmath> 
 
 #include "../include/pointersFunctions.h"
 #include "../include/saveDataFunctions.h"
@@ -9,8 +10,8 @@
 #define drand48() ((float)rand()/(float)RAND_MAX)
 int main(){
 
-    // Size of the system and total numer of iterations
-    size_t dimension{6}, time{1};
+    // Size of the system
+    size_t dimension{6};
 
     // Pointers to allocate states of the system
     int *currentStates{nullptr}; // pointer to the current states
@@ -22,23 +23,18 @@ int main(){
     neighbors       =   create1DPtr(dimension);
     nextStates      =   create1DPtr(dimension);
 
-    // Density between states A and B, and between A and C.
-    // in the distribution, or total configuration.
-    double densityStatesAB{0.5};
-    double densityStatesAC{0.8};
+    // Pointers to store distance components
+    int *statesDist{nullptr}, *neighborsDist{nullptr};
 
-    // Set the initial conditions
-    configureInitialConditions(dimension, densityStatesAB, densityStatesAC,currentStates, neighbors, nextStates);
+    // Allocate memory to save components of distance
+    statesDist      = create1DPtr(dimension);
+    neighborsDist   = create1DPtr(dimension);
 
-    // Create output files to store the counts of each state
-    /*FILE *countStateA = createBinOutput("countStateA.bin");
-    FILE *countStateB = createBinOutput("countStateB.bin");
-    FILE *countStateC = createBinOutput("countStateC.bin");
-
-    // Verify if the files were opened properly
-    verifyBinaryOutput(countStateA);
-    verifyBinaryOutput(countStateB);
-    verifyBinaryOutput(countStateC);*/
+    // Set distances to zero for safety
+    for(size_t cellIdx{}; cellIdx < dimension; cellIdx++){
+        statesDist[cellIdx]     = 0;
+        neighborsDist[cellIdx]  = 0;
+    }
 
     //=============================================================================================================
     //===================================== E V O L V E  T H E  S Y S T E M ======================================= 
@@ -83,18 +79,24 @@ int main(){
     // Variables to store clusters on a specific direction as a buffer
     int clusterRight{}, clusterLeft{};
 
+    // Variables to store square of distances between configurations
+    int squareStateDist{}, squareNeighDist{};
+
+    // Variables to store the transformation of the conf. from ternary to decimal
+    int decStates{}, decNeighbors{};
+
+    
+
+    decimalToTernary(dimension, 25, currentStates);
+    decimalToTernary(dimension, -101, neighbors);
+
+    
+
+    
     
     // EVOLUTION OF THE SYSTEM
     
-    for(size_t t{}; t < time; t++){
-        // Variable to test energy conservation
-        int energy{};
-
-        // Define variables to store the frequency of each state over simulation
-        int totalStatesA{}, totalStatesB{}, totalStatesC{};
-
-        displayPtr(dimension, currentStates);
-        displayPtr(dimension, neighbors);
+    for(int i{}; i < 10;i++){
 
         // Access to each cell of the array to evolve it
         for(size_t cellIdx{}; cellIdx < dimension; cellIdx++){
@@ -111,25 +113,36 @@ int main(){
             firstNeighborLeft   =   neighbors[ptrFirstNeighborLeftIdx[cellIdx]];
             secondNeighborLeft  =   neighbors[ptrSecondNeighborLeftIdx[cellIdx]];
 
-            // Evolve the state
+            // Evolve cell 
             nextStates[cellIdx] = Q2RPottsRule(cellIdx, currentStates, firstNeighborRight, secondNeighborRight, firstNeighborLeft, secondNeighborLeft);
 
+            // Compute relative distance between components
+            statesDist[cellIdx]     = neighbors[cellIdx] - currentStates[cellIdx];
+            neighborsDist[cellIdx]  = nextStates[cellIdx] - neighbors[cellIdx];
+
+            // Compute the square of the euclidean distance
+            squareStateDist = statesDist[cellIdx] * statesDist[cellIdx];
+            squareNeighDist = neighborsDist[cellIdx] * neighborsDist[cellIdx];
+
+            // Get the configuration in decimal form
+            decStates       += currentStates[cellIdx] * pow(3,dimension - 1 - cellIdx);
+            decNeighbors    += neighbors[cellIdx] * pow(3,dimension - 1 - cellIdx);
+
         }
-        displayPtr(dimension, nextStates);
-        std::cout << "===============================================\n";
-        displayPtr(dimension, clusterStateA);
-        displayPtr(dimension, clusterStateB);
-        displayPtr(dimension, clusterStateC);
 
         // Permute currentStates with neighbors and neighbors with nextStates to evolve one step
         reArrangePtr(dimension, currentStates, neighbors, nextStates);
 
+        // Set the conditions properly for counting another iteration
+        decStates = 0; decNeighbors = 0;
+        initialStateAdjListCluster(dimension, adjListStates, clusterStateA, clusterStateB, clusterStateC);
     }
 
     // Compute the energy
     int energy{};
     computeEnergy(dimension, energy, currentStates, neighbors, ptrFirstNeighborRightIdx, ptrSecondNeighborRightIdx, ptrFirstNeighborLeftIdx, ptrSecondNeighborLeftIdx);
     std::cout << energy << std::endl;
+    std:: cout << "===================================================================" << std::endl;
 
     // Clean the memory used by pointers
     delete[] currentStates; currentStates   = NULL;

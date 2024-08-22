@@ -136,7 +136,7 @@ void computeEnergy(const size_t &size, int &energy, int *ptrStates, int *ptrNeig
 }
 
 // Add visited idx to the adjacency list
-void addAdjacencyList(const size_t &idxCell, const size_t idxVisited, int &clusterDirection, int *ptrStates, bool *adjListStates){
+void addAdjacencyList(const size_t &idxCell, const size_t idxVisited, int &clusterDirection, bool *adjListStates){
     
     // Add the cluster in the count on its specific direction
     clusterDirection++;
@@ -165,7 +165,7 @@ void clustering(const size_t &size, const size_t &idxCell, int *ptrStates, int *
             for(size_t idxCluster{static_cast<size_t>(ptrFirstNeighborLeftIdx[idxCell])}; (idxCluster != idxCell && idxCluster >= 0); idxCluster--){
 
                 if(currentState == ptrStates[idxCluster]){
-                    addAdjacencyList(idxCell, idxCluster, clusterLeft, ptrStates, adjListStates);
+                    addAdjacencyList(idxCell, idxCluster, clusterLeft, adjListStates);
                 }
                 // If the state visited is not equal to current state we stop the iteration
                 else{break;}
@@ -178,7 +178,7 @@ void clustering(const size_t &size, const size_t &idxCell, int *ptrStates, int *
             for(size_t idxCluster{static_cast<size_t>(ptrFirstNeighborRightIdx[idxCell])}; idxCluster < size; idxCluster++){
 
                 if(currentState == ptrStates[idxCluster]){
-                    addAdjacencyList(idxCell, idxCluster, clusterRight, ptrStates, adjListStates);
+                    addAdjacencyList(idxCell, idxCluster, clusterRight, adjListStates);
                 }
                 // If the state visited is not equal to current state we stop the iteration
                 else{break;}
@@ -194,7 +194,7 @@ void clustering(const size_t &size, const size_t &idxCell, int *ptrStates, int *
             for(size_t idxCluster{static_cast<size_t>(ptrFirstNeighborLeftIdx[idxCell])}; (idxCluster != idxCell && idxCluster >= 0); idxCluster--){
 
                 if(currentState == ptrStates[idxCluster]){
-                    addAdjacencyList(idxCell, idxCluster, clusterLeft,ptrStates, adjListStates);
+                    addAdjacencyList(idxCell, idxCluster, clusterLeft, adjListStates);
                 }
                 // If the state visited is not equal to current state we stop the iteration
                 else{break;}
@@ -207,7 +207,7 @@ void clustering(const size_t &size, const size_t &idxCell, int *ptrStates, int *
             for(size_t idxCluster{static_cast<size_t>(ptrFirstNeighborRightIdx[idxCell])}; idxCluster < size; idxCluster++){
 
                 if(currentState == ptrStates[idxCluster]){
-                    addAdjacencyList(idxCell, idxCluster, clusterRight, ptrStates, adjListStates);
+                    addAdjacencyList(idxCell, idxCluster, clusterRight, adjListStates);
                 }
                 // If the state visited is not equal to current state we stop the iteration
                 else{break;}
@@ -230,7 +230,7 @@ void clusterToArray(const size_t &idxCell, int *ptrStates, int *ptrClusterA, int
 void addTotalCluster(const size_t &size, const size_t &idxCell, int *ptrStates, int *ptrClusterA, int *ptrClusterB, int *ptrClusterC, int &clusterRight, int &clusterLeft){
     // The cluster's size will indicate the position on the array of clusters
     int clusterSize{};
-    if( ((clusterRight != 0) || (clusterLeft != 0)) && (clusterLeft + clusterRight < size) ){
+    if( ((clusterRight != 0) || (clusterLeft != 0)) && (clusterLeft + clusterRight < static_cast<int>(size)) ){
         clusterSize = clusterRight + clusterLeft;
         clusterToArray(idxCell, ptrStates, ptrClusterA, ptrClusterB, ptrClusterC, clusterSize);
     }

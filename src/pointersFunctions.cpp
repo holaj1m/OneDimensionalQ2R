@@ -12,6 +12,30 @@ int *create1DPtr(size_t ptrSize){
     return allocateMemory;
 }
 
+// Transform from decimal number to ternary base
+void decimalToTernary(size_t size, int decimalNumber, int *ptrConf){
+    
+    int sign = (decimalNumber < 0) ? -1 : 1;
+    decimalNumber = std::abs(decimalNumber);
+
+    for(size_t power{}; power < size; power++){
+
+        int remainder = decimalNumber % 3;
+        decimalNumber /= 3;
+
+        // Balance the ternary base to -1, 0 and 1
+        if (remainder == 2 || remainder == -2) {
+            remainder = -1;
+            decimalNumber++;
+        }
+
+        // Fill the conf. from right to left
+        ptrConf[size - 1 - power] = remainder * sign;
+    }
+
+    
+}
+
 // Configure initial states for adjacency list and clusters
 void initialStateAdjListCluster(const size_t &size, bool *ptrAdjList, int *ptrClusterA, int *ptrClusterB, int *ptrClusterC){
     
@@ -22,30 +46,6 @@ void initialStateAdjListCluster(const size_t &size, bool *ptrAdjList, int *ptrCl
         ptrClusterA[cellIdx] = 0;
         ptrClusterB[cellIdx] = 0;
         ptrClusterC[cellIdx] = 0;
-    }
-}
-
-// Configure initial conditions over pointers
-void configureInitialConditions(size_t ptrSize, double densityStatesAB, double densityStatesAC, int *statesPtr, int *neighborsPtr, int *evolutionPtr){
-    
-    // Create a variable that will determines if the state is or not zero
-    int selectZero{};
-
-    for(size_t i{} ; i < ptrSize ; i++){
-
-        // Initialize ptr of states randomly considering states density
-
-        selectZero = 1- int(drand48() + densityStatesAB);
-        if(selectZero == 0){statesPtr[i] = 0;}
-        else{statesPtr[i] = 1 - 2*int(drand48() + densityStatesAC);}
-
-        // As initial condition we impose that neighbors are equal to states for the first step
-
-        neighborsPtr[i] = statesPtr[i];
-
-        // Finally replace the garbage on evolution buffer
-
-        evolutionPtr[i] = statesPtr[i];
     }
 }
 

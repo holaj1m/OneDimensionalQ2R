@@ -13,7 +13,7 @@ int Q2RPottsRule(const size_t &idxCell, int *ptrStates, const int &firstNeighbor
 void computeEnergy(const size_t &size, int &energy, int *ptrStates, int *ptrNeighbors, int *ptrFirstNeighborRightIdx, int *ptrSecondNeighborRightIdx, int *ptrFirstNeighborLeftIdx, int *ptrSecondNeighborLeftIdx);
 
 // Add visited idx to the adjacency list
-void addAdjacencyList(const size_t &idxCell, const size_t idxVisited, int &clusterDirection, int *ptrStates, bool *adjListStates);
+void addAdjacencyList(const size_t &idxCell, const size_t idxVisited, int &clusterDirection, bool *adjListStates);
 
 // Clusters algorithm
 void clustering(const size_t &size, const size_t &idxCell, int *ptrStates, int *ptrFirstNeighborRightIdx, int *ptrFirstNeighborLeftIdx, bool *adjListStates, int &clusterRight, int &clusterLeft);
