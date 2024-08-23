@@ -67,3 +67,13 @@ void displayPtr(size_t ptrSize, int *ptr){
     std::cout << ptr[ptrSize-1] << "]" << std::endl;
 }
 
+// Compare the elements of two pointers
+bool comparePtrs(size_t size, int *ptr1, int *ptr2, int *ptr3, int *ptr4){
+    // If the two pointers have the same elements in the same order this function return true
+    for(size_t cellIdx{}; cellIdx < size; cellIdx++){
+        if(ptr1[cellIdx] != ptr2[cellIdx] || ptr3[cellIdx] != ptr4[cellIdx]){
+            return false;
+        }
+    }
+    return true;
+}

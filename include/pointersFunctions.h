@@ -18,4 +18,7 @@ void reArrangePtr(size_t ptrSize, int *statesPtr, int *neighborsPtr, int *evolut
 // Display pointer
 void displayPtr(size_t ptrSize, int *ptr);
 
+// Compare the elements of two pointers
+bool comparePtrs(size_t size, int *ptr1, int *ptr2, int *ptr3, int *ptr4);
+
 #endif

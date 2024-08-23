@@ -18,10 +18,16 @@ int main(){
     int *neighbors{nullptr}; // pointer to the neighbours
     int *nextStates{nullptr}; // Buffer that point to the future states
 
+    int *initialCondStates{nullptr}; // Initial states of the system
+    int *initialCondNeigh{nullptr}; // Initial neighbors of the system
+
     // Allocate memory on pointers
     currentStates   =   create1DPtr(dimension);
     neighbors       =   create1DPtr(dimension);
     nextStates      =   create1DPtr(dimension);
+
+    initialCondStates = create1DPtr(dimension);
+    initialCondNeigh  = create1DPtr(dimension);
 
     // Pointers to store distance components
     int *statesDist{nullptr}, *neighborsDist{nullptr};
@@ -86,18 +92,26 @@ int main(){
     int decStates{}, decNeighbors{};
 
     
-
+    // Set the initial condition for the system
     decimalToTernary(dimension, 25, currentStates);
     decimalToTernary(dimension, -101, neighbors);
 
-    
+    // Store the initial condition in the system
+    decimalToTernary(dimension, 25, initialCondStates);
+    decimalToTernary(dimension, -101, initialCondNeigh);
 
-    
-    
+    // Variable that count the period of the configuration
+    int period{};
+
     // EVOLUTION OF THE SYSTEM
     
-    for(int i{}; i < 10;i++){
-
+    while(true){
+        // Add a period
+        period++;
+        std:: cout << "Current states: " << std::endl;
+        displayPtr(dimension, currentStates);
+        std:: cout << "Neighbors: " << std::endl;
+        displayPtr(dimension, neighbors);
         // Access to each cell of the array to evolve it
         for(size_t cellIdx{}; cellIdx < dimension; cellIdx++){
 
@@ -129,11 +143,19 @@ int main(){
             decNeighbors    += neighbors[cellIdx] * pow(3,dimension - 1 - cellIdx);
 
         }
+        std:: cout << "Evolution at iteration " << period << std::endl;
+        displayPtr(dimension, nextStates);
+        std:: cout << "===================================================================" << std::endl;
 
         // Permute currentStates with neighbors and neighbors with nextStates to evolve one step
         reArrangePtr(dimension, currentStates, neighbors, nextStates);
 
-        // Set the conditions properly for counting another iteration
+        // Verify if the cycle was closed
+        if(comparePtrs(dimension, initialCondStates, currentStates, initialCondNeigh, neighbors)){
+            break;
+        }
+
+        // Set the conditions properly for another iteration
         decStates = 0; decNeighbors = 0;
         initialStateAdjListCluster(dimension, adjListStates, clusterStateA, clusterStateB, clusterStateC);
     }
@@ -142,6 +164,7 @@ int main(){
     int energy{};
     computeEnergy(dimension, energy, currentStates, neighbors, ptrFirstNeighborRightIdx, ptrSecondNeighborRightIdx, ptrFirstNeighborLeftIdx, ptrSecondNeighborLeftIdx);
     std::cout << energy << std::endl;
+    std::cout << period << std::endl;
     std:: cout << "===================================================================" << std::endl;
 
     // Clean the memory used by pointers
