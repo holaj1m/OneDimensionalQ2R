@@ -9,9 +9,13 @@
 //DEFINE drand48 TO OBTAIN A RANDOM NUMBER
 #define drand48() ((float)rand()/(float)RAND_MAX)
 int main(){
-
+    //===================================================================================================
+    //===================================== S T A T E  P O I N T E R S ==================================
     // Size of the system
     size_t dimension{6};
+    
+    // The number of the current configurations
+    int numberStates{25}, numberNeighbors{-101};
 
     // Pointers to allocate states of the system
     int *currentStates{nullptr}; // pointer to the current states
@@ -42,9 +46,15 @@ int main(){
         neighborsDist[cellIdx]  = 0;
     }
 
-    //=============================================================================================================
-    //===================================== E V O L V E  T H E  S Y S T E M ======================================= 
-    
+    // Variables to store square of distances between configurations
+    int squareStateDist{}, squareNeighDist{};
+
+    // Variables to store the transformation of the conf. from ternary to decimal
+    int decStates{}, decNeighbors{};
+
+    //===================================================================================
+    //===================================== P B C ======================================= 
+
     // Pointers to allocate index of neighbors for each state
     int *ptrFirstNeighborRightIdx{nullptr}, *ptrSecondNeighborRightIdx{nullptr};
     int *ptrFirstNeighborLeftIdx{nullptr}, *ptrSecondNeighborLeftIdx{nullptr};
@@ -62,6 +72,9 @@ int main(){
     // Define variables to save the current neighbors of a cell
     int firstNeighborRight{}, secondNeighborRight{};
     int firstNeighborLeft{}, secondNeighborLeft{};
+
+    //===========================================================================================
+    //===================================== C L U S T E R ======================================= 
 
     // Pointer to allocate index of visited states during the computation of clusters
     bool *adjListStates{nullptr};
@@ -85,20 +98,42 @@ int main(){
     // Variables to store clusters on a specific direction as a buffer
     int clusterRight{}, clusterLeft{};
 
-    // Variables to store square of distances between configurations
-    int squareStateDist{}, squareNeighDist{};
+    //============================================================================================
+    //================================ F I L E S ===========================
+    
+    // Binary files to save the distances
+    FILE* distanceStatesFile    = createBinOutput("squareDistStates.bin");
+    FILE* distanceNeighborsFile = createBinOutput("squareDistNeigh.bin");
 
-    // Variables to store the transformation of the conf. from ternary to decimal
-    int decStates{}, decNeighbors{};
+    // Binary files to save the evolution of configuration in decimal numbers
+    FILE* confNumberStatesFile      = createBinOutput("confNumberStates.bin");
+    FILE* confNumberNeighborsFile   = createBinOutput("confNumberNeighbors.bin");
 
+    // Binary files to save the evolution of clusters in time
+    FILE* clusterStateAFile = createBinOutput("clusterStateA.bin");
+    FILE* clusterStateBFile = createBinOutput("clusterStateB.bin");
+    FILE* clusterStateCFile = createBinOutput("clusterStateC.bin");
+
+    // Verify outputs
+    verifyBinaryOutput(distanceStatesFile);
+    verifyBinaryOutput(distanceNeighborsFile);
+    verifyBinaryOutput(confNumberStatesFile);
+    verifyBinaryOutput(confNumberNeighborsFile);
+    verifyBinaryOutput(clusterStateAFile);
+    verifyBinaryOutput(clusterStateBFile);
+    verifyBinaryOutput(clusterStateCFile);
+
+
+    //============================================================================================
+    //================================ E V O L V E  T H E  S Y S T E M =========================== 
     
     // Set the initial condition for the system
-    decimalToTernary(dimension, 25, currentStates);
-    decimalToTernary(dimension, -101, neighbors);
+    decimalToTernary(dimension, numberStates, currentStates);
+    decimalToTernary(dimension, numberNeighbors, neighbors);
 
     // Store the initial condition in the system
-    decimalToTernary(dimension, 25, initialCondStates);
-    decimalToTernary(dimension, -101, initialCondNeigh);
+    decimalToTernary(dimension, numberStates, initialCondStates);
+    decimalToTernary(dimension, numberNeighbors, initialCondNeigh);
 
     // Variable that count the period of the configuration
     int period{};
@@ -108,10 +143,7 @@ int main(){
     while(true){
         // Add a period
         period++;
-        std:: cout << "Current states: " << std::endl;
-        displayPtr(dimension, currentStates);
-        std:: cout << "Neighbors: " << std::endl;
-        displayPtr(dimension, neighbors);
+
         // Access to each cell of the array to evolve it
         for(size_t cellIdx{}; cellIdx < dimension; cellIdx++){
 
@@ -135,27 +167,49 @@ int main(){
             neighborsDist[cellIdx]  = nextStates[cellIdx] - neighbors[cellIdx];
 
             // Compute the square of the euclidean distance
-            squareStateDist = statesDist[cellIdx] * statesDist[cellIdx];
-            squareNeighDist = neighborsDist[cellIdx] * neighborsDist[cellIdx];
+            squareStateDist += statesDist[cellIdx] * statesDist[cellIdx];
+            squareNeighDist += neighborsDist[cellIdx] * neighborsDist[cellIdx];
 
             // Get the configuration in decimal form
             decStates       += currentStates[cellIdx] * pow(3,dimension - 1 - cellIdx);
             decNeighbors    += neighbors[cellIdx] * pow(3,dimension - 1 - cellIdx);
 
         }
-        std:: cout << "Evolution at iteration " << period << std::endl;
-        displayPtr(dimension, nextStates);
-        std:: cout << "===================================================================" << std::endl;
 
         // Permute currentStates with neighbors and neighbors with nextStates to evolve one step
         reArrangePtr(dimension, currentStates, neighbors, nextStates);
 
+        // ============ S A V I N G  D A T A ==============
+        // Save the number of configuration in files
+        fwrite(&decStates, sizeof(int), 1, confNumberStatesFile);
+        fwrite(&decNeighbors, sizeof(int), 1, confNumberNeighborsFile);
+
+        // Distances of between configurations
+        fwrite(&squareStateDist, sizeof(int), 1, distanceStatesFile);
+        fwrite(&squareNeighDist, sizeof(int), 1, distanceNeighborsFile);
+
+        // Clusters
+        fwrite(clusterStateA, sizeof(int), dimension, clusterStateAFile);
+        fwrite(clusterStateB, sizeof(int), dimension, clusterStateBFile);
+        fwrite(clusterStateC, sizeof(int), dimension, clusterStateCFile);
+
         // Verify if the cycle was closed
         if(comparePtrs(dimension, initialCondStates, currentStates, initialCondNeigh, neighbors)){
+            // Close the files
+            fclose(confNumberStatesFile);
+            fclose(confNumberNeighborsFile);
+            fclose(distanceStatesFile);
+            fclose(distanceNeighborsFile);
+            fclose(clusterStateAFile);
+            fclose(clusterStateBFile);
+            fclose(clusterStateCFile);
+
+            // Break the loop
             break;
         }
 
         // Set the conditions properly for another iteration
+        squareStateDist = 0; squareNeighDist = 0;
         decStates = 0; decNeighbors = 0;
         initialStateAdjListCluster(dimension, adjListStates, clusterStateA, clusterStateB, clusterStateC);
     }
@@ -163,9 +217,22 @@ int main(){
     // Compute the energy
     int energy{};
     computeEnergy(dimension, energy, currentStates, neighbors, ptrFirstNeighborRightIdx, ptrSecondNeighborRightIdx, ptrFirstNeighborLeftIdx, ptrSecondNeighborLeftIdx);
-    std::cout << energy << std::endl;
-    std::cout << period << std::endl;
-    std:: cout << "===================================================================" << std::endl;
+
+    // Binary file to store the energy of the configuration
+    FILE* energyFile = createBinOutput("energy.bin");
+    verifyBinaryOutput(energyFile);
+
+    // Binary File to store the total period
+    FILE* periodFile = createBinOutput("period.bin");
+    verifyBinaryOutput(periodFile);
+
+    // Write the period and energy on the files
+    fwrite(&energy, sizeof(int),1, energyFile);
+    fwrite(&period, sizeof(int), 1, periodFile);
+
+    // Close the files
+    fclose(energyFile);
+    fclose(periodFile);
 
     // Clean the memory used by pointers
     delete[] currentStates; currentStates   = NULL;
