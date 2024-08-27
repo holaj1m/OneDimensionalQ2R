@@ -1,21 +1,26 @@
 #include <iostream>
 #include <cstdlib>
 #include <cmath> 
+#include <string>
 
 #include "../include/pointersFunctions.h"
 #include "../include/saveDataFunctions.h"
 #include "../include/evolutionFunctions.h"
 
-//DEFINE drand48 TO OBTAIN A RANDOM NUMBER
-#define drand48() ((float)rand()/(float)RAND_MAX)
 int main(){
     //===================================================================================================
     //===================================== S T A T E  P O I N T E R S ==================================
     // Size of the system
-    size_t dimension{6};
+    size_t dimension{};
     
     // The number of the current configurations
-    int numberStates{25}, numberNeighbors{-101};
+    int numberStates{}, numberNeighbors{};
+
+    // Name of external file with size of the sys and configurations
+    std::string extFileParam{"PARAMETERSVAL.txt"};
+
+    // Get size of the system and configuration
+    extractFrom(extFileParam, dimension, numberStates, numberNeighbors);
 
     // Pointers to allocate states of the system
     int *currentStates{nullptr}; // pointer to the current states
