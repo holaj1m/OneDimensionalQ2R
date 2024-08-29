@@ -33,8 +33,6 @@ for (( k=$MINSIZE; k <= $MAXSIZE; k++ )); do
     # Compute the half of the number of configurations
     maxConfig=$(( (3**k - 1)/2 ))
     minConfig=$((-maxConfig))
-    #maxConfig=$(( 100 ))
-    #minConfig=$((-100))
 
     # Create folders corresponding to each configuration
     for (( i=$minConfig; i <= $maxConfig; i++ )); do

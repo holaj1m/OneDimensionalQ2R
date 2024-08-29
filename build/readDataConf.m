@@ -1,3 +1,4 @@
+% PROCEDURAL SCRIPT
 
 % create a structure with folders
 PS=dir('SPACE_*');
@@ -66,6 +67,8 @@ for i=1:length(PS)
     cd ..
 end
 %%
+% PARALLEL SCRIPT
+
 tic
 cd SPACE_SIZE_006/
 % Get the full path of the current folder
@@ -133,6 +136,8 @@ cd ..
 toc
 
 %%
+% Getting some info from the structure
+
 names = fieldnames(phaseSpace);
 totalConf = length(names);
 energy = zeros(totalConf,1);
