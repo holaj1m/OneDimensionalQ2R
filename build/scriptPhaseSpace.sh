@@ -16,7 +16,7 @@ l=0
 
 # Create different folders for each size of the system
 for (( k=$MINSIZE; k <= $MAXSIZE; k++ )); do
-    # DImension of the system
+    # Dimension of the system
     DIME=$((k))
     # Name of the folder
     nameDime='SPACE_SIZE_'
@@ -31,10 +31,10 @@ for (( k=$MINSIZE; k <= $MAXSIZE; k++ )); do
     cd ${direDime}
 
     # Compute the half of the number of configurations
-    #maxConfig=$(( (3**k - 1)/2 ))
-    #minConfig=$((-maxConfig))
-    maxConfig=$(( 3 ))
+    maxConfig=$(( (3**k - 1)/2 ))
     minConfig=$((-maxConfig))
+    #maxConfig=$(( 100 ))
+    #minConfig=$((-100))
 
     # Create folders corresponding to each configuration
     for (( i=$minConfig; i <= $maxConfig; i++ )); do
