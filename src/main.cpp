@@ -11,16 +11,7 @@ int main(){
     //===================================================================================================
     //===================================== S T A T E  P O I N T E R S ==================================
     // Size of the system
-    size_t dimension{};
-    
-    // The number of the current configurations
-    int numberStates{}, numberNeighbors{};
-
-    // Name of external file with size of the sys and configurations
-    std::string extFileParam{"PARAMETERSVAL.txt"};
-
-    // Get size of the system and configuration
-    extractFrom(extFileParam, dimension, numberStates, numberNeighbors);
+    size_t dimension{8};
 
     // Pointers to allocate states of the system
     int *currentStates{nullptr}; // pointer to the current states
@@ -78,163 +69,86 @@ int main(){
     int firstNeighborRight{}, secondNeighborRight{};
     int firstNeighborLeft{}, secondNeighborLeft{};
 
-    //===========================================================================================
-    //===================================== C L U S T E R ======================================= 
-
-    // Pointer to allocate index of visited states during the computation of clusters
-    bool *adjListStates{nullptr};
-
-    // Allocate memory for adjacency list pointers
-    adjListStates = new bool[dimension];
-
-    // Pointers to allocate clusters of each state
-    int *clusterStateA{nullptr}, *clusterStateB{nullptr}, *clusterStateC{nullptr};
-
-    // Allocate memory for clusters ptrs
-    clusterStateA = create1DPtr(dimension);
-    clusterStateB = create1DPtr(dimension);
-    clusterStateC = create1DPtr(dimension);
-
-    // Set all clusters to cero and adj List to true
-    // I'm going to set true as "idx that yo have to visit"
-    initialStateAdjListCluster(dimension, adjListStates, clusterStateA, clusterStateB, clusterStateC);
-    // Thus, if a certain index is true we have to compute its clusters
-
-    // Variables to store clusters on a specific direction as a buffer
-    int clusterRight{}, clusterLeft{};
-
     //============================================================================================
     //================================ F I L E S ===========================
-    
-    // Binary files to save the distances
-    FILE* distanceStatesFile    = createBinOutput("squareDistStates.bin");
-    FILE* distanceNeighborsFile = createBinOutput("squareDistNeigh.bin");
 
-    // Binary files to save the evolution of configuration in decimal numbers
-    FILE* confNumberStatesFile      = createBinOutput("confNumberStates.bin");
-    FILE* confNumberNeighborsFile   = createBinOutput("confNumberNeighbors.bin");
+    // Binary files to save the evolution of configuration in ternary configuration
+    FILE* periodFile    = createBinOutput("periodsL8.bin");
+    FILE* energyFile    = createBinOutput("energiesL8.bin");
 
-    // Binary files to save the evolution of clusters in time
-    FILE* clusterStateAFile = createBinOutput("clusterStateA.bin");
-    FILE* clusterStateBFile = createBinOutput("clusterStateB.bin");
-    FILE* clusterStateCFile = createBinOutput("clusterStateC.bin");
 
     // Verify outputs
-    verifyBinaryOutput(distanceStatesFile);
-    verifyBinaryOutput(distanceNeighborsFile);
-    verifyBinaryOutput(confNumberStatesFile);
-    verifyBinaryOutput(confNumberNeighborsFile);
-    verifyBinaryOutput(clusterStateAFile);
-    verifyBinaryOutput(clusterStateBFile);
-    verifyBinaryOutput(clusterStateCFile);
+    verifyBinaryOutput(periodFile);
+    verifyBinaryOutput(energyFile);
 
 
     //============================================================================================
     //================================ E V O L V E  T H E  S Y S T E M =========================== 
+
+    double max{(pow(3,dimension) - 1) * 0.5};
+    int maxConf{int(max)};
+    int minConf{-1 * maxConf};
+
+    for(int numberStates{minConf}; numberStates <= maxConf; numberStates++){
+
+        for(int numberNeighbors{minConf}; numberNeighbors <= maxConf; numberNeighbors++){
+
+            // Set the initial condition for the system
+            decimalToTernary(dimension, numberStates, currentStates);
+            decimalToTernary(dimension, numberNeighbors, neighbors);
+
+            // Store the initial condition in the system
+            decimalToTernary(dimension, numberStates, initialCondStates);
+            decimalToTernary(dimension, numberNeighbors, initialCondNeigh);
     
-    // Set the initial condition for the system
-    decimalToTernary(dimension, numberStates, currentStates);
-    decimalToTernary(dimension, numberNeighbors, neighbors);
+            // Variable that count the period of the configuration
+            int period{};
 
-    // Store the initial condition in the system
-    decimalToTernary(dimension, numberStates, initialCondStates);
-    decimalToTernary(dimension, numberNeighbors, initialCondNeigh);
+            // Compute the energy
+            int energy{};
+            computeEnergy(dimension, energy, currentStates, neighbors, ptrFirstNeighborRightIdx, ptrSecondNeighborRightIdx, ptrFirstNeighborLeftIdx, ptrSecondNeighborLeftIdx);
 
-    // Variable that count the period of the configuration
-    int period{};
 
-    // EVOLUTION OF THE SYSTEM
+            // EVOLUTION OF THE SYSTEM
     
-    while(true){
-        // Add a period
-        period++;
+            while(true){
+                // Add a period
+                period++;
 
-        // Access to each cell of the array to evolve it
-        for(size_t cellIdx{}; cellIdx < dimension; cellIdx++){
+                // Access to each cell of the array to evolve it
+                for(size_t cellIdx{}; cellIdx < dimension; cellIdx++){
 
-            if(adjListStates[cellIdx]){
-                clustering(dimension, cellIdx, currentStates, ptrFirstNeighborRightIdx, ptrFirstNeighborLeftIdx, adjListStates, clusterRight, clusterLeft);
-                addTotalCluster(dimension, cellIdx, currentStates, clusterStateA, clusterStateB, clusterStateC, clusterRight, clusterLeft);
+                    // Neighbors of current cell
+                    firstNeighborRight  =   neighbors[ptrFirstNeighborRightIdx[cellIdx]];
+                    secondNeighborRight =   neighbors[ptrSecondNeighborRightIdx[cellIdx]];
+
+                    firstNeighborLeft   =   neighbors[ptrFirstNeighborLeftIdx[cellIdx]];
+                    secondNeighborLeft  =   neighbors[ptrSecondNeighborLeftIdx[cellIdx]];
+
+                    // Evolve cell 
+                    nextStates[cellIdx] = Q2RPottsRule(cellIdx, currentStates, firstNeighborRight, secondNeighborRight, firstNeighborLeft, secondNeighborLeft);
+
+                }
+
+                // Permute currentStates with neighbors and neighbors with nextStates to evolve one step
+                reArrangePtr(dimension, currentStates, neighbors, nextStates);
+
+                // Verify if the cycle was closed
+                if(comparePtrs(dimension, initialCondStates, currentStates, initialCondNeigh, neighbors)){
+            
+                    // Save the period and energy of the configuration
+                    fwrite(&period, sizeof(int), 1, periodFile);
+                    fwrite(&energy, sizeof(int), 1, energyFile);
+
+                    // Break the loop
+                    break;
+                }
+
             }
 
-            // Neighbors of current cell
-            firstNeighborRight  =   neighbors[ptrFirstNeighborRightIdx[cellIdx]];
-            secondNeighborRight =   neighbors[ptrSecondNeighborRightIdx[cellIdx]];
-
-            firstNeighborLeft   =   neighbors[ptrFirstNeighborLeftIdx[cellIdx]];
-            secondNeighborLeft  =   neighbors[ptrSecondNeighborLeftIdx[cellIdx]];
-
-            // Evolve cell 
-            nextStates[cellIdx] = Q2RPottsRule(cellIdx, currentStates, firstNeighborRight, secondNeighborRight, firstNeighborLeft, secondNeighborLeft);
-
-            // Compute relative distance between components
-            statesDist[cellIdx]     = neighbors[cellIdx] - currentStates[cellIdx];
-            neighborsDist[cellIdx]  = nextStates[cellIdx] - neighbors[cellIdx];
-
-            // Compute the square of the euclidean distance
-            squareStateDist += statesDist[cellIdx] * statesDist[cellIdx];
-            squareNeighDist += neighborsDist[cellIdx] * neighborsDist[cellIdx];
-
-            // Get the configuration in decimal form
-            decStates       += currentStates[cellIdx] * pow(3,dimension - 1 - cellIdx);
-            decNeighbors    += neighbors[cellIdx] * pow(3,dimension - 1 - cellIdx);
-
         }
-
-        // Permute currentStates with neighbors and neighbors with nextStates to evolve one step
-        reArrangePtr(dimension, currentStates, neighbors, nextStates);
-
-        // ============ S A V I N G  D A T A ==============
-        // Save the number of configuration in files
-        fwrite(&decStates, sizeof(int), 1, confNumberStatesFile);
-        fwrite(&decNeighbors, sizeof(int), 1, confNumberNeighborsFile);
-
-        // Distances of between configurations
-        fwrite(&squareStateDist, sizeof(int), 1, distanceStatesFile);
-        fwrite(&squareNeighDist, sizeof(int), 1, distanceNeighborsFile);
-
-        // Clusters
-        fwrite(clusterStateA, sizeof(int), dimension, clusterStateAFile);
-        fwrite(clusterStateB, sizeof(int), dimension, clusterStateBFile);
-        fwrite(clusterStateC, sizeof(int), dimension, clusterStateCFile);
-
-        // Verify if the cycle was closed
-        if(comparePtrs(dimension, initialCondStates, currentStates, initialCondNeigh, neighbors)){
-            // Close the files
-            fclose(confNumberStatesFile);
-            fclose(confNumberNeighborsFile);
-            fclose(distanceStatesFile);
-            fclose(distanceNeighborsFile);
-            fclose(clusterStateAFile);
-            fclose(clusterStateBFile);
-            fclose(clusterStateCFile);
-
-            // Break the loop
-            break;
-        }
-
-        // Set the conditions properly for another iteration
-        squareStateDist = 0; squareNeighDist = 0;
-        decStates = 0; decNeighbors = 0;
-        initialStateAdjListCluster(dimension, adjListStates, clusterStateA, clusterStateB, clusterStateC);
     }
-
-    // Compute the energy
-    int energy{};
-    computeEnergy(dimension, energy, currentStates, neighbors, ptrFirstNeighborRightIdx, ptrSecondNeighborRightIdx, ptrFirstNeighborLeftIdx, ptrSecondNeighborLeftIdx);
-
-    // Binary file to store the energy of the configuration
-    FILE* energyFile = createBinOutput("energy.bin");
-    verifyBinaryOutput(energyFile);
-
-    // Binary File to store the total period
-    FILE* periodFile = createBinOutput("period.bin");
-    verifyBinaryOutput(periodFile);
-
-    // Write the period and energy on the files
-    fwrite(&energy, sizeof(int),1, energyFile);
-    fwrite(&period, sizeof(int), 1, periodFile);
-
+    
     // Close the files
     fclose(energyFile);
     fclose(periodFile);
@@ -248,12 +162,6 @@ int main(){
     delete[] ptrFirstNeighborLeftIdx;   ptrFirstNeighborLeftIdx     = NULL;
     delete[] ptrSecondNeighborRightIdx; ptrSecondNeighborRightIdx   = NULL;
     delete[] ptrSecondNeighborLeftIdx;  ptrSecondNeighborLeftIdx    = NULL;
-
-    delete[] adjListStates; adjListStates = NULL;
-
-    delete[] clusterStateA; clusterStateA = NULL;
-    delete[] clusterStateB; clusterStateB = NULL;
-    delete[] clusterStateC; clusterStateC = NULL;
 
     return 0;
 }
