@@ -11,7 +11,7 @@ int main(){
     //===================================================================================================
     //===================================== S T A T E  P O I N T E R S ==================================
     // Size of the system
-    size_t dimension{8};
+    size_t dimension{9};
 
     // Pointers to allocate states of the system
     int *currentStates{nullptr}; // pointer to the current states
@@ -73,8 +73,8 @@ int main(){
     //================================ F I L E S ===========================
 
     // Binary files to save the evolution of configuration in ternary configuration
-    FILE* periodFile    = createBinOutput("periodsL8.bin");
-    FILE* energyFile    = createBinOutput("energiesL8.bin");
+    FILE* periodFile    = createBinOutput("periodsL9.bin");
+    FILE* energyFile    = createBinOutput("energiesL9.bin");
 
 
     // Verify outputs
