@@ -3,13 +3,13 @@ LANG=en_US
 ###############################################
 
 # Minimum size of the chain for this process
-MINSIZE=6
+MINSIZE=5
 
 # Maximum size of the chain for this process
-MAXSIZE=6
+MAXSIZE=5
 
 # Number of cores to use 
-NUM_CORES=8
+NUM_CORES=14
 
 # Variable to handle concurrency
 l=0
@@ -74,13 +74,12 @@ for (( k=$MINSIZE; k <= $MAXSIZE; k++ )); do
             sed -e "s/DIME/$DIME/g" -e "s/CONFI/$CONFI/g" -e "s/CONFJ/$CONFJ/g" parameters.XX > ${dirFolder}/PARAMETERSVAL.txt
             # Enter in the directory
             cd ${dirFolder}
-
-            # Run program in parallel
-            nohup ./a.out&
             
             # Use only NUM_CORES to run the program
             ((l=l%NUM_CORES))
             ((l++==0)) && wait
+            # Run program in parallel
+            nohup ./a.out& > timecpu.txt
              
             cd ..
         done

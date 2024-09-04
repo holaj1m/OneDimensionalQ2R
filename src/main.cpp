@@ -39,7 +39,7 @@ int main(){
     initialCondNeigh  = create1DPtr(dimension);
 
     // Pointers to store distance components
-    int *statesDist{nullptr}, *neighborsDist{nullptr};
+    /*int *statesDist{nullptr}, *neighborsDist{nullptr};
 
     // Allocate memory to save components of distance
     statesDist      = create1DPtr(dimension);
@@ -55,7 +55,7 @@ int main(){
     int squareStateDist{}, squareNeighDist{};
 
     // Variables to store the transformation of the conf. from ternary to decimal
-    int decStates{}, decNeighbors{};
+    int decStates{}, decNeighbors{};*/
 
     //===================================================================================
     //===================================== P B C ======================================= 
@@ -82,7 +82,7 @@ int main(){
     //===================================== C L U S T E R ======================================= 
 
     // Pointer to allocate index of visited states during the computation of clusters
-    bool *adjListStates{nullptr};
+    /*bool *adjListStates{nullptr};
 
     // Allocate memory for adjacency list pointers
     adjListStates = new bool[dimension];
@@ -101,13 +101,13 @@ int main(){
     // Thus, if a certain index is true we have to compute its clusters
 
     // Variables to store clusters on a specific direction as a buffer
-    int clusterRight{}, clusterLeft{};
+    int clusterRight{}, clusterLeft{};*/
 
     //============================================================================================
     //================================ F I L E S ===========================
     
     // Binary files to save the distances
-    FILE* distanceStatesFile    = createBinOutput("squareDistStates.bin");
+    /*FILE* distanceStatesFile    = createBinOutput("squareDistStates.bin");
     FILE* distanceNeighborsFile = createBinOutput("squareDistNeigh.bin");
 
     // Binary files to save the evolution of configuration in decimal numbers
@@ -126,7 +126,7 @@ int main(){
     verifyBinaryOutput(confNumberNeighborsFile);
     verifyBinaryOutput(clusterStateAFile);
     verifyBinaryOutput(clusterStateBFile);
-    verifyBinaryOutput(clusterStateCFile);
+    verifyBinaryOutput(clusterStateCFile);*/
 
 
     //============================================================================================
@@ -152,10 +152,10 @@ int main(){
         // Access to each cell of the array to evolve it
         for(size_t cellIdx{}; cellIdx < dimension; cellIdx++){
 
-            if(adjListStates[cellIdx]){
+            /*if(adjListStates[cellIdx]){
                 clustering(dimension, cellIdx, currentStates, ptrFirstNeighborRightIdx, ptrFirstNeighborLeftIdx, adjListStates, clusterRight, clusterLeft);
                 addTotalCluster(dimension, cellIdx, currentStates, clusterStateA, clusterStateB, clusterStateC, clusterRight, clusterLeft);
-            }
+            }*/
 
             // Neighbors of current cell
             firstNeighborRight  =   neighbors[ptrFirstNeighborRightIdx[cellIdx]];
@@ -168,7 +168,7 @@ int main(){
             nextStates[cellIdx] = Q2RPottsRule(cellIdx, currentStates, firstNeighborRight, secondNeighborRight, firstNeighborLeft, secondNeighborLeft);
 
             // Compute relative distance between components
-            statesDist[cellIdx]     = neighbors[cellIdx] - currentStates[cellIdx];
+            /*statesDist[cellIdx]     = neighbors[cellIdx] - currentStates[cellIdx];
             neighborsDist[cellIdx]  = nextStates[cellIdx] - neighbors[cellIdx];
 
             // Compute the square of the euclidean distance
@@ -177,7 +177,7 @@ int main(){
 
             // Get the configuration in decimal form
             decStates       += currentStates[cellIdx] * pow(3,dimension - 1 - cellIdx);
-            decNeighbors    += neighbors[cellIdx] * pow(3,dimension - 1 - cellIdx);
+            decNeighbors    += neighbors[cellIdx] * pow(3,dimension - 1 - cellIdx);*/
 
         }
 
@@ -186,7 +186,7 @@ int main(){
 
         // ============ S A V I N G  D A T A ==============
         // Save the number of configuration in files
-        fwrite(&decStates, sizeof(int), 1, confNumberStatesFile);
+        /*fwrite(&decStates, sizeof(int), 1, confNumberStatesFile);
         fwrite(&decNeighbors, sizeof(int), 1, confNumberNeighborsFile);
 
         // Distances of between configurations
@@ -196,27 +196,27 @@ int main(){
         // Clusters
         fwrite(clusterStateA, sizeof(int), dimension, clusterStateAFile);
         fwrite(clusterStateB, sizeof(int), dimension, clusterStateBFile);
-        fwrite(clusterStateC, sizeof(int), dimension, clusterStateCFile);
+        fwrite(clusterStateC, sizeof(int), dimension, clusterStateCFile);*/
 
         // Verify if the cycle was closed
         if(comparePtrs(dimension, initialCondStates, currentStates, initialCondNeigh, neighbors)){
             // Close the files
-            fclose(confNumberStatesFile);
+            /*fclose(confNumberStatesFile);
             fclose(confNumberNeighborsFile);
             fclose(distanceStatesFile);
             fclose(distanceNeighborsFile);
             fclose(clusterStateAFile);
             fclose(clusterStateBFile);
-            fclose(clusterStateCFile);
+            fclose(clusterStateCFile);*/
 
             // Break the loop
             break;
         }
 
         // Set the conditions properly for another iteration
-        squareStateDist = 0; squareNeighDist = 0;
+        /*squareStateDist = 0; squareNeighDist = 0;
         decStates = 0; decNeighbors = 0;
-        initialStateAdjListCluster(dimension, adjListStates, clusterStateA, clusterStateB, clusterStateC);
+        initialStateAdjListCluster(dimension, adjListStates, clusterStateA, clusterStateB, clusterStateC);*/
     }
 
     // Compute the energy
@@ -239,6 +239,17 @@ int main(){
     fclose(energyFile);
     fclose(periodFile);
 
+    // Binary files to save the evolution of configuration in ternary form
+    FILE* confStatesFile      = createBinOutput("statesConf.bin");
+    FILE* confNeighborsFile   = createBinOutput("neighborsConf.bin");
+
+    verifyBinaryOutput(confStatesFile);
+    verifyBinaryOutput(confNeighborsFile);
+    fwrite(initialCondStates, sizeof(int), dimension, confStatesFile);
+    fwrite(initialCondNeigh, sizeof(int), dimension, confNeighborsFile);
+    fclose(confStatesFile);
+    fclose(confNeighborsFile);
+
     // Clean the memory used by pointers
     delete[] currentStates; currentStates   = NULL;
     delete[] neighbors;     neighbors       = NULL;
@@ -249,11 +260,11 @@ int main(){
     delete[] ptrSecondNeighborRightIdx; ptrSecondNeighborRightIdx   = NULL;
     delete[] ptrSecondNeighborLeftIdx;  ptrSecondNeighborLeftIdx    = NULL;
 
-    delete[] adjListStates; adjListStates = NULL;
+    /*delete[] adjListStates; adjListStates = NULL;
 
     delete[] clusterStateA; clusterStateA = NULL;
     delete[] clusterStateB; clusterStateB = NULL;
-    delete[] clusterStateC; clusterStateC = NULL;
+    delete[] clusterStateC; clusterStateC = NULL;*/
 
     return 0;
 }
