@@ -9,4 +9,6 @@ void verifyBinaryOutput(FILE* outFile);
 // Read parameters of the simulation from external file
 int extractFrom(std::string parameters, size_t &sizeSystem, int &numConfStates, int &numConfNeighbors);
 
+void crearDirectorio(int var1, int var2);
+
 #endif

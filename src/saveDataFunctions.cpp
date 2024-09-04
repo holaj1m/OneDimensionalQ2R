@@ -3,6 +3,10 @@
 #include<vector>
 #include<string>
 #include<cstdio>
+#include <filesystem>
+
+namespace fs = std::filesystem;
+
 
 #include "../include/saveDataFunctions.h"
 
@@ -39,4 +43,41 @@ int extractFrom(std::string parameters, size_t &sizeSystem, int &numConfStates, 
   numConfStates     = stoi(text_vec.at(1));
   numConfNeighbors  = stoi(text_vec.at(2));
   return 0;
+}
+
+void crearDirectorio(int var1, int var2){
+  std::string nombreDirectorio;
+
+    if (var1 < 0 && var2 < 0) {
+        nombreDirectorio = "cnf_m" + std::to_string(abs(var1)) + "_m" + std::to_string(abs(var2));
+    } else if (var1 > 0 && var2 > 0) {
+        nombreDirectorio = "cnf_p" + std::to_string(var1) + "_p" + std::to_string(var2);
+    } else if (var1 == 0 && var2 == 0) {
+        nombreDirectorio = "cnf_0_0";
+    } else if (var1 == 0) {
+        if (var2 < 0) {
+            nombreDirectorio = "cnf_0_m" + std::to_string(abs(var2));
+        } else {
+            nombreDirectorio = "cnf_0_p" + std::to_string(var2);
+        }
+    } else if (var2 == 0) {
+        if (var1 < 0) {
+            nombreDirectorio = "cnf_m" + std::to_string(abs(var1)) + "_0";
+        } else {
+            nombreDirectorio = "cnf_p" + std::to_string(var1) + "_0";
+        }
+    } else {
+        nombreDirectorio = "cnf_" + std::to_string(var1) + "_" + std::to_string(var2);
+    }
+
+    // Crear el directorio
+    if (!fs::exists(nombreDirectorio)) {
+        fs::create_directory(nombreDirectorio);
+        std::cout << "Directorio creado: " << nombreDirectorio << std::endl;
+    } else {
+        std::cout << "El directorio ya existe: " << nombreDirectorio << std::endl;
+    }
+
+    // Cambiar al directorio recién creado
+    fs::current_path(nombreDirectorio);
 }
