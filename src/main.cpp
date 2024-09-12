@@ -11,16 +11,16 @@ int main(){
     //===================================================================================================
     //===================================== S T A T E  P O I N T E R S ==================================
     // Size of the system
-    size_t dimension{};
+    size_t dimension{7};
     
     // The number of the current configurations
-    int numberStates{}, numberNeighbors{};
+    int numberStates{-1008}, numberNeighbors{-738};
 
     // Name of external file with size of the sys and configurations
-    std::string extFileParam{"PARAMETERSVAL.txt"};
+    /*std::string extFileParam{"PARAMETERSVAL.txt"};
 
     // Get size of the system and configuration
-    extractFrom(extFileParam, dimension, numberStates, numberNeighbors);
+    extractFrom(extFileParam, dimension, numberStates, numberNeighbors);*/
 
     // Pointers to allocate states of the system
     int *currentStates{nullptr}; // pointer to the current states
@@ -180,6 +180,19 @@ int main(){
             decNeighbors    += neighbors[cellIdx] * pow(3,dimension - 1 - cellIdx);*/
 
         }
+
+        // Mostrar configuraciones de estados, vecinos y evolucion
+
+        std::cout << "--------------- I T E R A C I O N "<< period << " ---------------" << std:: endl;
+        std::cout << "Estados ";
+        displayPtr(dimension, currentStates);
+
+        std::cout <<"\nVecinos ";
+        displayPtr(dimension, neighbors);
+
+        std::cout <<"\nEvolución ";
+        displayPtr(dimension, nextStates);
+
 
         // Permute currentStates with neighbors and neighbors with nextStates to evolve one step
         reArrangePtr(dimension, currentStates, neighbors, nextStates);
