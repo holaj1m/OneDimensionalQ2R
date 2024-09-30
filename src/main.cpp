@@ -10,15 +10,19 @@
 int main(){
     //===================================================================================================
     //===================================== S T A T E  P O I N T E R S ==================================
-    // Size of the system
-    size_t dimension{};
-    
+    // Size of the square matrix
+    size_t matrixSize{3};
 
+    // Number of the configurations
+    int numberStates{}, numberNeighbors{};
     // Name of external file with size of the sys and configurations
     std::string extFileParam{"PARAMETERSVAL.txt"};
 
     // Get size of the system and configuration
-    extractFrom(extFileParam, dimension, numberStates, numberNeighbors);
+    extractFrom(extFileParam, matrixSize, numberStates, numberNeighbors);
+
+    // Size of the 1D system
+    size_t dimension{matrixSize * matrixSize};
 
     // Pointers to allocate states of the system
     int *currentStates{nullptr}; // pointer to the current states
@@ -51,36 +55,12 @@ int main(){
     ptrNeighborDown     =   create1DPtr(dimension);
 
     // Compute the idx of the neighbor for each position in the array
-    idxPeriodicBoudaryCondition(dimension, ptrNeighborRight, ptrNeighborLeft, ptrNeighborUp, ptrNeighborDown);
+    // FUNCTION DESIGNED FOR A 3 X 3 MATRIX
+    idxPeriodicBoudaryCondition(matrixSize, ptrNeighborRight, ptrNeighborLeft, ptrNeighborUp, ptrNeighborDown);
 
     // Define variables to save the current neighbors of a cell
     int neighborRight{}, neighborLeft{};
     int neighborUp{}, neighborDown{};
-
-    //============================================================================================
-    //================================ F I L E S ===========================
-    
-    // Binary files to save the distances
-    /*FILE* distanceStatesFile    = createBinOutput("squareDistStates.bin");
-    FILE* distanceNeighborsFile = createBinOutput("squareDistNeigh.bin");
-
-    // Binary files to save the evolution of configuration in decimal numbers
-    FILE* confNumberStatesFile      = createBinOutput("confNumberStates.bin");
-    FILE* confNumberNeighborsFile   = createBinOutput("confNumberNeighbors.bin");
-
-    // Binary files to save the evolution of clusters in time
-    FILE* clusterStateAFile = createBinOutput("clusterStateA.bin");
-    FILE* clusterStateBFile = createBinOutput("clusterStateB.bin");
-    FILE* clusterStateCFile = createBinOutput("clusterStateC.bin");
-
-    // Verify outputs
-    verifyBinaryOutput(distanceStatesFile);
-    verifyBinaryOutput(distanceNeighborsFile);
-    verifyBinaryOutput(confNumberStatesFile);
-    verifyBinaryOutput(confNumberNeighborsFile);
-    verifyBinaryOutput(clusterStateAFile);
-    verifyBinaryOutput(clusterStateBFile);
-    verifyBinaryOutput(clusterStateCFile);*/
 
 
     //============================================================================================
@@ -136,23 +116,10 @@ int main(){
 
         // Verify if the cycle was closed
         if(comparePtrs(dimension, initialCondStates, currentStates, initialCondNeigh, neighbors)){
-            // Close the files
-            /*fclose(confNumberStatesFile);
-            fclose(confNumberNeighborsFile);
-            fclose(distanceStatesFile);
-            fclose(distanceNeighborsFile);
-            fclose(clusterStateAFile);
-            fclose(clusterStateBFile);
-            fclose(clusterStateCFile);*/
-
             // Break the loop
             break;
         }
 
-        // Set the conditions properly for another iteration
-        /*squareStateDist = 0; squareNeighDist = 0;
-        decStates = 0; decNeighbors = 0;
-        initialStateAdjListCluster(dimension, adjListStates, clusterStateA, clusterStateB, clusterStateC);*/
     }
 
     // Compute the energy
@@ -195,12 +162,6 @@ int main(){
     delete[] ptrNeighborUp;   ptrNeighborUp     = NULL;
     delete[] ptrNeighborLeft; ptrNeighborLeft   = NULL;
     delete[] ptrNeighborDown;  ptrNeighborDown    = NULL;
-
-    /*delete[] adjListStates; adjListStates = NULL;
-
-    delete[] clusterStateA; clusterStateA = NULL;
-    delete[] clusterStateB; clusterStateB = NULL;
-    delete[] clusterStateC; clusterStateC = NULL;*/
 
     return 0;
 }

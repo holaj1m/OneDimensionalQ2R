@@ -2,18 +2,24 @@
 #include <vector>
 
 // Compute neighbors index considering periodic boundary conditions
-void idxPeriodicBoudaryCondition(const size_t &size, int *firstNeighborRightIdx, int *secondNeighborRightIdx, int *firstNeighborLeftIdx, int *secondNeighborLeftIdx){
+void idxPeriodicBoudaryCondition(const size_t &size, int *neighborRightIdx, int *neighborLeftIdx, int *neighborUpIdx, int *neighborDownIdx){
 
     // Visit each cell on the state's array
-    for(size_t idxCell{}; idxCell < size; idxCell++){
-        // Mod operation to obtain neighbors
-        firstNeighborRightIdx[idxCell]  =   (idxCell + 1) % size;
-        secondNeighborRightIdx[idxCell] =   (idxCell + 2) % size;
+    for(size_t row{}; row < size; row++){
 
-        firstNeighborLeftIdx[idxCell]   =   (idxCell + size - 1) % size;
-        secondNeighborLeftIdx[idxCell]  =   (idxCell + size - 2) % size;
+        for(size_t column{}; column < size; column++){
+            // Linearize the cell from 2D to 1D
+            size_t idxCell = row * size + column;
+
+            // Mod operation to obtain neighbors
+            neighborRightIdx[idxCell] = (column + 1) % size;
+            neighborLeftIdx[idxCell] = (column + size - 1) % size;
+
+            neighborUpIdx[idxCell] = (row + size - 1) % size;
+            neighborDownIdx[idxCell] = (row + 1) % size;
+        }
+        
     }
-    
 
 }
 
@@ -107,7 +113,7 @@ int Q2RPottsRule(const size_t &idxCell, int *ptrStates, const int &firstNeighbor
 }
 
 //Computation of energy on the system
-void computeEnergy(const size_t &size, int &energy, int *ptrStates, int *ptrNeighbors, int *ptrFirstNeighborRightIdx, int *ptrSecondNeighborRightIdx, int *ptrFirstNeighborLeftIdx, int *ptrSecondNeighborLeftIdx){
+void computeEnergy(const size_t &size, int &energy, int *ptrStates, int *ptrNeighbors, int *ptrneighborRightIdx, int *ptrneighborLeftIdx, int *ptrFirstNeighborLeftIdx, int *ptrSecondNeighborLeftIdx){
     
     int currentState{};
     int firstNeighborRight{}, secondNeighborRight{}, firstNeighborLeft{}, secondNeighborLeft{};
@@ -118,8 +124,8 @@ void computeEnergy(const size_t &size, int &energy, int *ptrStates, int *ptrNeig
         currentState = ptrStates[idxCell];
 
         // Neighbors of current cell
-        firstNeighborRight  =   ptrNeighbors[ptrFirstNeighborRightIdx[idxCell]];
-        secondNeighborRight =   ptrNeighbors[ptrSecondNeighborRightIdx[idxCell]];
+        firstNeighborRight  =   ptrNeighbors[ptrneighborRightIdx[idxCell]];
+        secondNeighborRight =   ptrNeighbors[ptrneighborLeftIdx[idxCell]];
 
         firstNeighborLeft   =   ptrNeighbors[ptrFirstNeighborLeftIdx[idxCell]];
         secondNeighborLeft  =   ptrNeighbors[ptrSecondNeighborLeftIdx[idxCell]];
@@ -146,12 +152,12 @@ void addAdjacencyList(const size_t &idxCell, const size_t idxVisited, int &clust
 }
 
 // Clusters algorithm
-void clustering(const size_t &size, const size_t &idxCell, int *ptrStates, int *ptrFirstNeighborRightIdx, int *ptrFirstNeighborLeftIdx, bool *adjListStates, int &clusterRight, int &clusterLeft){
+void clustering(const size_t &size, const size_t &idxCell, int *ptrStates, int *ptrneighborRightIdx, int *ptrFirstNeighborLeftIdx, bool *adjListStates, int &clusterRight, int &clusterLeft){
     
     // Get the current state
     int currentState = ptrStates[idxCell];
     // Get the first adjacent states in the configuration of states
-    int currentStateRight = ptrStates[ptrFirstNeighborRightIdx[idxCell]];
+    int currentStateRight = ptrStates[ptrneighborRightIdx[idxCell]];
     int currentStateLeft  = ptrStates[ptrFirstNeighborLeftIdx[idxCell]];
 
     // The algorithm consists of checking the different possibilities depending on the current index
@@ -175,7 +181,7 @@ void clustering(const size_t &size, const size_t &idxCell, int *ptrStates, int *
         // If cluster is on the right side we count from the position to the end of the array
         if(currentState == currentStateRight){
 
-            for(size_t idxCluster{static_cast<size_t>(ptrFirstNeighborRightIdx[idxCell])}; idxCluster < size; idxCluster++){
+            for(size_t idxCluster{static_cast<size_t>(ptrneighborRightIdx[idxCell])}; idxCluster < size; idxCluster++){
 
                 if(currentState == ptrStates[idxCluster]){
                     addAdjacencyList(idxCell, idxCluster, clusterRight, adjListStates);
@@ -204,7 +210,7 @@ void clustering(const size_t &size, const size_t &idxCell, int *ptrStates, int *
         // If cluster is on the right side we count from the position to the end of the array
         if(currentState == currentStateRight){
 
-            for(size_t idxCluster{static_cast<size_t>(ptrFirstNeighborRightIdx[idxCell])}; idxCluster < size; idxCluster++){
+            for(size_t idxCluster{static_cast<size_t>(ptrneighborRightIdx[idxCell])}; idxCluster < size; idxCluster++){
 
                 if(currentState == ptrStates[idxCluster]){
                     addAdjacencyList(idxCell, idxCluster, clusterRight, adjListStates);
