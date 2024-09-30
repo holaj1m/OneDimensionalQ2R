@@ -11,16 +11,14 @@ int main(){
     //===================================================================================================
     //===================================== S T A T E  P O I N T E R S ==================================
     // Size of the system
-    size_t dimension{7};
+    size_t dimension{};
     
-    // The number of the current configurations
-    int numberStates{-1008}, numberNeighbors{-738};
 
     // Name of external file with size of the sys and configurations
-    /*std::string extFileParam{"PARAMETERSVAL.txt"};
+    std::string extFileParam{"PARAMETERSVAL.txt"};
 
     // Get size of the system and configuration
-    extractFrom(extFileParam, dimension, numberStates, numberNeighbors);*/
+    extractFrom(extFileParam, dimension, numberStates, numberNeighbors);
 
     // Pointers to allocate states of the system
     int *currentStates{nullptr}; // pointer to the current states
@@ -38,70 +36,26 @@ int main(){
     initialCondStates = create1DPtr(dimension);
     initialCondNeigh  = create1DPtr(dimension);
 
-    // Pointers to store distance components
-    /*int *statesDist{nullptr}, *neighborsDist{nullptr};
-
-    // Allocate memory to save components of distance
-    statesDist      = create1DPtr(dimension);
-    neighborsDist   = create1DPtr(dimension);
-
-    // Set distances to zero for safety
-    for(size_t cellIdx{}; cellIdx < dimension; cellIdx++){
-        statesDist[cellIdx]     = 0;
-        neighborsDist[cellIdx]  = 0;
-    }
-
-    // Variables to store square of distances between configurations
-    int squareStateDist{}, squareNeighDist{};
-
-    // Variables to store the transformation of the conf. from ternary to decimal
-    int decStates{}, decNeighbors{};*/
-
     //===================================================================================
     //===================================== P B C ======================================= 
 
     // Pointers to allocate index of neighbors for each state
-    int *ptrFirstNeighborRightIdx{nullptr}, *ptrSecondNeighborRightIdx{nullptr};
-    int *ptrFirstNeighborLeftIdx{nullptr}, *ptrSecondNeighborLeftIdx{nullptr};
+    int *ptrNeighborRight{nullptr}, *ptrNeighborLeft{nullptr};
+    int *ptrNeighborUp{nullptr}, *ptrNeighborDown{nullptr};
 
     // Allocate memory on index pointers
-    ptrFirstNeighborRightIdx   =   create1DPtr(dimension);
-    ptrSecondNeighborRightIdx  =   create1DPtr(dimension);
+    ptrNeighborRight    =   create1DPtr(dimension);
+    ptrNeighborLeft     =   create1DPtr(dimension);
 
-    ptrFirstNeighborLeftIdx    =   create1DPtr(dimension);
-    ptrSecondNeighborLeftIdx   =   create1DPtr(dimension);
+    ptrNeighborUp       =   create1DPtr(dimension);
+    ptrNeighborDown     =   create1DPtr(dimension);
 
     // Compute the idx of the neighbor for each position in the array
-    idxPeriodicBoudaryCondition(dimension, ptrFirstNeighborRightIdx, ptrSecondNeighborRightIdx, ptrFirstNeighborLeftIdx, ptrSecondNeighborLeftIdx);
+    idxPeriodicBoudaryCondition(dimension, ptrNeighborRight, ptrNeighborLeft, ptrNeighborUp, ptrNeighborDown);
 
     // Define variables to save the current neighbors of a cell
-    int firstNeighborRight{}, secondNeighborRight{};
-    int firstNeighborLeft{}, secondNeighborLeft{};
-
-    //===========================================================================================
-    //===================================== C L U S T E R ======================================= 
-
-    // Pointer to allocate index of visited states during the computation of clusters
-    /*bool *adjListStates{nullptr};
-
-    // Allocate memory for adjacency list pointers
-    adjListStates = new bool[dimension];
-
-    // Pointers to allocate clusters of each state
-    int *clusterStateA{nullptr}, *clusterStateB{nullptr}, *clusterStateC{nullptr};
-
-    // Allocate memory for clusters ptrs
-    clusterStateA = create1DPtr(dimension);
-    clusterStateB = create1DPtr(dimension);
-    clusterStateC = create1DPtr(dimension);
-
-    // Set all clusters to cero and adj List to true
-    // I'm going to set true as "idx that yo have to visit"
-    initialStateAdjListCluster(dimension, adjListStates, clusterStateA, clusterStateB, clusterStateC);
-    // Thus, if a certain index is true we have to compute its clusters
-
-    // Variables to store clusters on a specific direction as a buffer
-    int clusterRight{}, clusterLeft{};*/
+    int neighborRight{}, neighborLeft{};
+    int neighborUp{}, neighborDown{};
 
     //============================================================================================
     //================================ F I L E S ===========================
@@ -152,32 +106,15 @@ int main(){
         // Access to each cell of the array to evolve it
         for(size_t cellIdx{}; cellIdx < dimension; cellIdx++){
 
-            /*if(adjListStates[cellIdx]){
-                clustering(dimension, cellIdx, currentStates, ptrFirstNeighborRightIdx, ptrFirstNeighborLeftIdx, adjListStates, clusterRight, clusterLeft);
-                addTotalCluster(dimension, cellIdx, currentStates, clusterStateA, clusterStateB, clusterStateC, clusterRight, clusterLeft);
-            }*/
-
             // Neighbors of current cell
-            firstNeighborRight  =   neighbors[ptrFirstNeighborRightIdx[cellIdx]];
-            secondNeighborRight =   neighbors[ptrSecondNeighborRightIdx[cellIdx]];
+            neighborRight  =   neighbors[ptrNeighborRight[cellIdx]];
+            neighborLeft =   neighbors[ptrNeighborLeft[cellIdx]];
 
-            firstNeighborLeft   =   neighbors[ptrFirstNeighborLeftIdx[cellIdx]];
-            secondNeighborLeft  =   neighbors[ptrSecondNeighborLeftIdx[cellIdx]];
+            neighborUp   =   neighbors[ptrNeighborUp[cellIdx]];
+            neighborDown  =   neighbors[ptrNeighborDown[cellIdx]];
 
             // Evolve cell 
-            nextStates[cellIdx] = Q2RPottsRule(cellIdx, currentStates, firstNeighborRight, secondNeighborRight, firstNeighborLeft, secondNeighborLeft);
-
-            // Compute relative distance between components
-            /*statesDist[cellIdx]     = neighbors[cellIdx] - currentStates[cellIdx];
-            neighborsDist[cellIdx]  = nextStates[cellIdx] - neighbors[cellIdx];
-
-            // Compute the square of the euclidean distance
-            squareStateDist += statesDist[cellIdx] * statesDist[cellIdx];
-            squareNeighDist += neighborsDist[cellIdx] * neighborsDist[cellIdx];
-
-            // Get the configuration in decimal form
-            decStates       += currentStates[cellIdx] * pow(3,dimension - 1 - cellIdx);
-            decNeighbors    += neighbors[cellIdx] * pow(3,dimension - 1 - cellIdx);*/
+            nextStates[cellIdx] = Q2RPottsRule(cellIdx, currentStates, neighborRight, neighborLeft, neighborUp, neighborDown);
 
         }
 
@@ -196,20 +133,6 @@ int main(){
 
         // Permute currentStates with neighbors and neighbors with nextStates to evolve one step
         reArrangePtr(dimension, currentStates, neighbors, nextStates);
-
-        // ============ S A V I N G  D A T A ==============
-        // Save the number of configuration in files
-        /*fwrite(&decStates, sizeof(int), 1, confNumberStatesFile);
-        fwrite(&decNeighbors, sizeof(int), 1, confNumberNeighborsFile);
-
-        // Distances of between configurations
-        fwrite(&squareStateDist, sizeof(int), 1, distanceStatesFile);
-        fwrite(&squareNeighDist, sizeof(int), 1, distanceNeighborsFile);
-
-        // Clusters
-        fwrite(clusterStateA, sizeof(int), dimension, clusterStateAFile);
-        fwrite(clusterStateB, sizeof(int), dimension, clusterStateBFile);
-        fwrite(clusterStateC, sizeof(int), dimension, clusterStateCFile);*/
 
         // Verify if the cycle was closed
         if(comparePtrs(dimension, initialCondStates, currentStates, initialCondNeigh, neighbors)){
@@ -234,7 +157,7 @@ int main(){
 
     // Compute the energy
     int energy{};
-    computeEnergy(dimension, energy, currentStates, neighbors, ptrFirstNeighborRightIdx, ptrSecondNeighborRightIdx, ptrFirstNeighborLeftIdx, ptrSecondNeighborLeftIdx);
+    computeEnergy(dimension, energy, currentStates, neighbors, ptrNeighborRight, ptrNeighborLeft, ptrNeighborUp, ptrNeighborDown);
 
     // Binary file to store the energy of the configuration
     FILE* energyFile = createBinOutput("energy.bin");
@@ -268,10 +191,10 @@ int main(){
     delete[] neighbors;     neighbors       = NULL;
     delete[] nextStates;    nextStates      = NULL;
 
-    delete[] ptrFirstNeighborRightIdx;  ptrFirstNeighborRightIdx    = NULL;
-    delete[] ptrFirstNeighborLeftIdx;   ptrFirstNeighborLeftIdx     = NULL;
-    delete[] ptrSecondNeighborRightIdx; ptrSecondNeighborRightIdx   = NULL;
-    delete[] ptrSecondNeighborLeftIdx;  ptrSecondNeighborLeftIdx    = NULL;
+    delete[] ptrNeighborRight;  ptrNeighborRight    = NULL;
+    delete[] ptrNeighborUp;   ptrNeighborUp     = NULL;
+    delete[] ptrNeighborLeft; ptrNeighborLeft   = NULL;
+    delete[] ptrNeighborDown;  ptrNeighborDown    = NULL;
 
     /*delete[] adjListStates; adjListStates = NULL;
 
